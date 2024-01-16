@@ -6,6 +6,8 @@ const websiteNameEl = document.getElementById('website-name')
 const websiteUrlEl = document.getElementById('website-url')
 const bookmarksContainer = document.getElementById('bookmarks-container')
 
+let bookmarks = []
+
 function showModal() {
     modal.classList.add('show-modal')
     websiteNameEl.focus()
@@ -14,7 +16,6 @@ function showModal() {
 modalShow.addEventListener('click', showModal)
 modalClose.addEventListener('click', () => modal.classList.remove('show-modal'))
 window.addEventListener('click', (e) => e.target === modal? modal.classList.remove('show-modal') : false)
-
 
 function validate(nameValue, urlValue) {
     const exp = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g
@@ -30,6 +31,46 @@ function validate(nameValue, urlValue) {
     return true
 }
 
+function buildBookmarks() {
+    bookmarks.forEach((bm) => {
+        const {name, url} = bm
+        console.log(name, url)
+        const item = document.createElement('div')
+        item.classList.add('item')
+        const closeIcon = document.createElement('i')
+        closeIcon.classList.add('fas', 'fa-trash')
+        closeIcon.title = 'Delete Bookmark'
+        // closeIcon.onclick = deleteBookmark(url)
+        const linkInfo = document.createElement('div')
+        linkInfo.classList.add('name')
+        const favicon = document.createElement('img')
+        favicon.src = `https://www.google.com/s2/favicons?domain=${url}`
+        favicon.alt = 'favicon'
+        const link = document.createElement('a')
+        link.href = url
+        link.target = "_blank"
+        link.textContent = name
+        linkInfo.append(favicon, link)
+        item.append(closeIcon, linkInfo)
+        bookmarksContainer.appendChild(item)
+    })
+}
+
+function fetchBookmarks() {
+    if(localStorage.getItem('bookmarks')){
+        bookmarks = JSON.parse(localStorage.getItem('bookmarks'))
+    } else {
+        bookmarks = [
+            {
+                name: 'Google',
+                url: 'https://google.com'
+            }
+        ]
+        localStorage.setItem('bookmarks', JSON.stringify(bookmarks))
+    }
+    buildBookmarks()
+}
+
 function storeBookmark(e) {
     e.preventDefault()
     const nameValue = websiteNameEl.value
@@ -37,11 +78,19 @@ function storeBookmark(e) {
     if (!urlValue.includes('https://') && !urlValue.includes('http://')) {
         urlValue = `https://${urlValue}`; 
     }
-    console.log(nameValue, urlValue)
     if (!validate(nameValue, urlValue)) {
         return false
     }
+    const bookmark = {
+        name: nameValue,
+        url: urlValue
+    }
+    bookmarks.push(bookmark)
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks))
+    bookmarkForm.reset()
+    websiteNameEl.focus()
 }
 
 
 bookmarkForm.addEventListener('submit', storeBookmark);
+fetchBookmarks()
