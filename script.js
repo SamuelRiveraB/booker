@@ -32,15 +32,15 @@ function validate(nameValue, urlValue) {
 }
 
 function buildBookmarks() {
-    bookmarks.forEach((bm) => {
+    bookmarksContainer.textContent = ''
+    bookmarks.forEach((bm, i) => {
         const {name, url} = bm
-        console.log(name, url)
         const item = document.createElement('div')
         item.classList.add('item')
         const closeIcon = document.createElement('i')
         closeIcon.classList.add('fas', 'fa-trash')
         closeIcon.title = 'Delete Bookmark'
-        // closeIcon.onclick = deleteBookmark(url)
+        closeIcon.setAttribute('onclick', `deleteBookmark('${i}')`)
         const linkInfo = document.createElement('div')
         linkInfo.classList.add('name')
         const favicon = document.createElement('img')
@@ -71,6 +71,12 @@ function fetchBookmarks() {
     buildBookmarks()
 }
 
+function deleteBookmark(i) {
+    bookmarks.splice(i, 1)
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks))
+    fetchBookmarks()
+}
+
 function storeBookmark(e) {
     e.preventDefault()
     const nameValue = websiteNameEl.value
@@ -89,8 +95,8 @@ function storeBookmark(e) {
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks))
     bookmarkForm.reset()
     websiteNameEl.focus()
+    fetchBookmarks()
 }
-
 
 bookmarkForm.addEventListener('submit', storeBookmark);
 fetchBookmarks()
